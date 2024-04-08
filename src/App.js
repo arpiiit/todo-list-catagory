@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function TodoList() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [category, setCategory] = useState('Uncategorized');
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem('tasks');
+    if (storedTasks) {
+      setTasks(JSON.parse(storedTasks));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleInputChange = (e) => {
     setNewTask(e.target.value);
@@ -37,6 +48,12 @@ function TodoList() {
     setTasks(newTasks);
   };
 
+  const addMultipleItems = (index, items) => {
+    const newTasks = [...tasks];
+    newTasks[index].task += `\n${items}`;
+    setTasks(newTasks);
+  };
+
   return (
     <div className="todo-list">
       <h1>Todo List</h1>
@@ -56,66 +73,23 @@ function TodoList() {
         <button onClick={addTask}>Add Task</button>
       </div>
       <div className="task-blocks">
-        <div className="category-block">
-          <h2>Uncategorized</h2>
-          {tasks.map((task, index) => {
-            if (task.category === 'Uncategorized') {
-              return (
-                <div key={index} className="task">
-                  <span>{task.task}</span>
-                  <button onClick={() => deleteTask(index)}>Delete</button>
-                  <button onClick={() => editTask(index, prompt('Edit Task', task.task))}>Edit</button>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-        <div className="category-block">
-          <h2>Work</h2>
-          {tasks.map((task, index) => {
-            if (task.category === 'Work') {
-              return (
-                <div key={index} className="task">
-                  <span>{task.task}</span>
-                  <button onClick={() => deleteTask(index)}>Delete</button>
-                  <button onClick={() => editTask(index, prompt('Edit Task', task.task))}>Edit</button>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-        <div className="category-block">
-          <h2>Personal</h2>
-          {tasks.map((task, index) => {
-            if (task.category === 'Personal') {
-              return (
-                <div key={index} className="task">
-                  <span>{task.task}</span>
-                  <button onClick={() => deleteTask(index)}>Delete</button>
-                  <button onClick={() => editTask(index, prompt('Edit Task', task.task))}>Edit</button>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-        <div className="category-block">
-          <h2>Shopping</h2>
-          {tasks.map((task, index) => {
-            if (task.category === 'Shopping') {
-              return (
-                <div key={index} className="task">
-                  <span>{task.task}</span>
-                  <button onClick={() => deleteTask(index)}>Delete</button>
-                  <button onClick={() => editTask(index, prompt('Edit Task', task.task))}>Edit</button>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
+        {['Uncategorized', 'Work', 'Personal', 'Shopping'].map((cat) => (
+          <div key={cat} className="category-block">
+            <h2>{cat}</h2>
+            {tasks.map((task, index) => {
+              if (task.category === cat) {
+                return (
+                  <div key={index} className={`task ${index % 2 === 0 ? 'even' : 'odd'}`}>
+                    <span>{index + 1}. {task.task}</span>
+                    <button onClick={() => deleteTask(index)}>Delete</button>
+                    <button onClick={() => editTask(index, prompt('Edit Task', task.task))}>Edit</button>
+                  </div>
+                );
+              }
+              return null;
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );
